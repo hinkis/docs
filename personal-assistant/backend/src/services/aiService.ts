@@ -2,9 +2,12 @@ import OpenAI from 'openai';
 import { AIResponse, InvoiceData, Message } from '../types/index.js';
 import { parseDateTime, formatHebrewDate } from '../utils/dateParser.js';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// יצירת לקוח OpenAI רק אם יש מפתח
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  : null;
+
+const isDemoMode = !openai;
 
 const SYSTEM_PROMPT = `אתה מזכיר אישי חכם ואדיב בשם "אלי". אתה מדבר עברית טבעית וברורה.
 תפקידך לעזור למשתמש בניהול המשימות, התזכורות והיומן שלו.
@@ -14,30 +17,7 @@ const SYSTEM_PROMPT = `אתה מזכיר אישי חכם ואדיב בשם "אל
 2. הוספת אירועים ליומן Google
 3. פענוח תמונות של חשבוניות ומסמכים
 4. הבנת תאריכים וזמנים בעברית טבעית
-5. ניהול שיחה טבעית ונעימה
-
-כשהמשתמש מבקש ליצור משימה או תזכורת:
-- חלץ את התאריך והשעה מהבקשה
-- חלץ את תיאור המשימה
-- אשר למשתמש את הפרטים
-
-כשהמשתמש מעלה תמונה:
-- נתח אותה בקפידה
-- אם זו חשבונית - חלץ: ספק, סכום, תאריך, תיאור
-- אם יש תאריך יעד - הצע ליצור תזכורת
-
-אימוג'ים ותגובות:
-- 👍 או ❤️ = אישור/הסכמה
-- 👎 = דחייה/ביטול
-- ✅ = סיום משימה
-- ⏰ = בקשת תזכורת
-- 📅 = שאילתת יומן
-
-תמיד היה:
-- ידידותי ומקצועי
-- תמציתי אך ברור
-- יוזם בהצעות רלוונטיות
-- רגיש להקשר השיחה`;
+5. ניהול שיחה טבעית ונעימה`;
 
 interface AIProcessResult {
   response: AIResponse;
@@ -49,11 +29,100 @@ interface AIProcessResult {
   };
 }
 
+// תגובות דמו כשאין מפתח OpenAI
+function getDemoResponse(content: string): AIProcessResult {
+  const lowerContent = content.toLowerCase();
+  let message = '';
+  let intent: AIResponse['intent'] = 'general_chat';
+  let shouldCreateEvent = false;
+  let eventDetails: AIProcessResult['eventDetails'];
+
+  const parsedDate = parseDateTime(content);
+
+  // זיהוי כוונה ותגובה מתאימה
+  if (lowerContent.includes('שלום') || lowerContent.includes('היי') || lowerContent.includes('בוקר')) {
+    message = 'שלום! 👋 אני אלי, המזכיר האישי שלך. במה אוכל לעזור היום?';
+  } else if (lowerContent.includes('תזכיר') || lowerContent.includes('תזכורת')) {
+    intent = 'create_reminder';
+    if (parsedDate) {
+      message = `✅ נרשם! אזכיר לך ב-${formatHebrewDate(parsedDate)}.\n\nהאם לשמור זאת ביומן Google?`;
+      shouldCreateEvent = true;
+      eventDetails = {
+        title: extractTaskTitle(content),
+        date: parsedDate,
+        description: content,
+      };
+    } else {
+      message = 'בשמחה! מתי לתזכר לך? (לדוגמה: "מחר ב-10 בבוקר")';
+    }
+  } else if (lowerContent.includes('משימה') || lowerContent.includes('צריך ל') || lowerContent.includes('לעשות')) {
+    intent = 'create_task';
+    if (parsedDate) {
+      message = `📝 הוספתי משימה: "${extractTaskTitle(content)}"\n📅 לתאריך: ${formatHebrewDate(parsedDate)}`;
+      shouldCreateEvent = true;
+      eventDetails = {
+        title: extractTaskTitle(content),
+        date: parsedDate,
+        description: content,
+      };
+    } else {
+      message = `📝 הוספתי משימה: "${extractTaskTitle(content)}"\n\nרוצה לקבוע תאריך יעד?`;
+    }
+  } else if (lowerContent.includes('יומן') || lowerContent.includes('מה יש לי')) {
+    intent = 'view_calendar';
+    message = '📅 הנה מה שמתוכנן להיום:\n\n• אין אירועים מתוכננים\n\nרוצה להוסיף אירוע חדש?';
+  } else if (lowerContent.includes('תודה') || lowerContent.includes('מעולה')) {
+    message = 'בשמחה! אני כאן בשבילך 😊';
+  } else if (/^[\p{Emoji}\s]+$/u.test(content.trim())) {
+    // תגובה לאימוג'י
+    const emojiResponses: Record<string, string> = {
+      '👍': 'מעולה! ממשיכים!',
+      '❤️': 'שמח שאהבת! 😊',
+      '👎': 'הבנתי, נבטל את זה.',
+      '✅': 'סימנתי כהושלם!',
+      '⏰': 'רוצה שאקבע תזכורת? ספר לי מתי.',
+      '📅': 'מציג את היומן שלך...',
+    };
+    message = emojiResponses[content.trim()] || `קיבלתי: ${content}`;
+  } else {
+    message = `הבנתי! "${content}"\n\nאיך אוכל לעזור עם זה? אני יכול:\n• ליצור תזכורת\n• להוסיף משימה\n• לשמור ביומן`;
+  }
+
+  return {
+    response: {
+      message,
+      intent,
+      extractedData: parsedDate
+        ? {
+            date: parsedDate.toISOString(),
+            time: `${parsedDate.getHours()}:${parsedDate.getMinutes().toString().padStart(2, '0')}`,
+          }
+        : undefined,
+    },
+    shouldCreateEvent,
+    eventDetails,
+  };
+}
+
+function extractTaskTitle(text: string): string {
+  const cleanText = text
+    .replace(/^(תזכיר לי|צריך ל|אני צריך|עלי ל|יש לי|להזכיר|תוסיף|הוסף)\s*/i, '')
+    .replace(/(מחר|היום|בשעה|ב-?\d+|בבוקר|בערב|בצהריים)/gi, '')
+    .trim();
+  return cleanText.substring(0, 50) || 'משימה חדשה';
+}
+
 export async function processMessage(
   content: string,
   conversationHistory: Message[]
 ): Promise<AIProcessResult> {
-  // המרת היסטוריית השיחה לפורמט OpenAI
+  // מצב דמו - תגובות מקומיות
+  if (isDemoMode) {
+    console.log('🎭 מצב דמו - משתמש בתגובות מקומיות');
+    return getDemoResponse(content);
+  }
+
+  // מצב מלא עם OpenAI
   const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
     { role: 'system', content: SYSTEM_PROMPT },
     ...conversationHistory.slice(-10).map((msg) => ({
@@ -63,7 +132,7 @@ export async function processMessage(
     { role: 'user', content },
   ];
 
-  const completion = await openai.chat.completions.create({
+  const completion = await openai!.chat.completions.create({
     model: 'gpt-4-turbo-preview',
     messages,
     functions: [
@@ -80,19 +149,6 @@ export async function processMessage(
           required: ['title', 'date'],
         },
       },
-      {
-        name: 'set_reminder',
-        description: 'יצירת תזכורת',
-        parameters: {
-          type: 'object',
-          properties: {
-            title: { type: 'string', description: 'כותרת התזכורת' },
-            date: { type: 'string', description: 'תאריך ושעה לתזכורת' },
-            message: { type: 'string', description: 'תוכן התזכורת' },
-          },
-          required: ['title', 'date'],
-        },
-      },
     ],
     function_call: 'auto',
     temperature: 0.7,
@@ -104,7 +160,6 @@ export async function processMessage(
   let shouldCreateEvent = false;
   let eventDetails: AIProcessResult['eventDetails'];
 
-  // בדיקה אם יש קריאה לפונקציה
   if (responseMessage.function_call) {
     const functionName = responseMessage.function_call.name;
     const functionArgs = JSON.parse(responseMessage.function_call.arguments || '{}');
@@ -119,7 +174,6 @@ export async function processMessage(
     }
   }
 
-  // ניתוח כוונה מהתוכן
   let intent: AIResponse['intent'] = 'general_chat';
   const lowerContent = content.toLowerCase();
 
@@ -127,13 +181,10 @@ export async function processMessage(
     intent = 'create_reminder';
   } else if (lowerContent.includes('משימה') || lowerContent.includes('צריך ל')) {
     intent = 'create_task';
-  } else if (lowerContent.includes('יומן') || lowerContent.includes('פגישה') || lowerContent.includes('אירוע')) {
+  } else if (lowerContent.includes('יומן') || lowerContent.includes('פגישה')) {
     intent = 'view_calendar';
-  } else if (lowerContent.includes('חשבונית') || lowerContent.includes('קבלה')) {
-    intent = 'process_invoice';
   }
 
-  // חילוץ תאריך מהטקסט
   const parsedDate = parseDateTime(content);
 
   return {
@@ -160,21 +211,25 @@ export async function processImage(
   invoiceData?: InvoiceData;
   suggestedDate?: Date;
 }> {
-  const prompt = userPrompt || 'נתח את התמונה. אם זו חשבונית, חלץ: ספק, סכום, מטבע, תאריך יעד, תיאור. אם יש תאריכים, ציין אותם.';
+  // מצב דמו
+  if (isDemoMode) {
+    return {
+      description: '🎭 מצב דמו: ניתוח תמונות דורש מפתח OpenAI.\n\nאני יכול לזהות חשבוניות, מסמכים ותאריכים כשמוגדר OPENAI_API_KEY.',
+      invoiceData: undefined,
+      suggestedDate: undefined,
+    };
+  }
 
-  const response = await openai.chat.completions.create({
+  const prompt = userPrompt || 'נתח את התמונה. אם זו חשבונית, חלץ: ספק, סכום, מטבע, תאריך יעד, תיאור.';
+
+  const response = await openai!.chat.completions.create({
     model: 'gpt-4-vision-preview',
     messages: [
       {
         role: 'user',
         content: [
           { type: 'text', text: prompt },
-          {
-            type: 'image_url',
-            image_url: {
-              url: `data:image/jpeg;base64,${imageBase64}`,
-            },
-          },
+          { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${imageBase64}` } },
         ],
       },
     ],
@@ -183,10 +238,7 @@ export async function processImage(
 
   const analysisText = response.choices[0].message.content || '';
 
-  // ניסיון לחלץ מידע על חשבונית
   let invoiceData: InvoiceData | undefined;
-
-  // חיפוש פטרנים של חשבונית
   const amountMatch = analysisText.match(/(?:סכום|סה"כ|total|amount)[:\s]*(?:₪|ILS|NIS)?\s*([\d,]+(?:\.\d{2})?)/i);
   const vendorMatch = analysisText.match(/(?:ספק|חברה|מ:|from)[:\s]*([^\n,]+)/i);
   const dateMatch = analysisText.match(/(?:תאריך|יעד|due|date)[:\s]*(\d{1,2}[./-]\d{1,2}[./-]?\d{0,4})/i);
@@ -200,37 +252,15 @@ export async function processImage(
     };
   }
 
-  // ניסיון לחלץ תאריך מומלץ
   let suggestedDate: Date | undefined;
   if (invoiceData?.dueDate) {
     suggestedDate = parseDateTime(invoiceData.dueDate) || undefined;
   }
 
-  return {
-    description: analysisText,
-    invoiceData,
-    suggestedDate,
-  };
+  return { description: analysisText, invoiceData, suggestedDate };
 }
 
-export async function processEmojiReaction(
-  emoji: string,
-  contextMessage: Message
-): Promise<string> {
-  const emojiMeanings: Record<string, string> = {
-    '👍': 'אישור',
-    '❤️': 'אהבתי',
-    '👎': 'ביטול',
-    '✅': 'סיום',
-    '⏰': 'תזכורת',
-    '📅': 'יומן',
-    '🔥': 'דחוף',
-    '⭐': 'חשוב',
-  };
-
-  const meaning = emojiMeanings[emoji] || 'תגובה';
-
-  // יצירת תגובה מותאמת
+export async function processEmojiReaction(emoji: string, contextMessage: Message): Promise<string> {
   const responses: Record<string, string> = {
     '👍': 'מעולה! אני ממשיך עם זה.',
     '❤️': 'שמח שאהבת! 😊',
@@ -241,6 +271,9 @@ export async function processEmojiReaction(
     '🔥': 'הבנתי שזה דחוף! אטפל בזה מיד.',
     '⭐': 'סימנתי כחשוב!',
   };
-
   return responses[emoji] || `קיבלתי את התגובה שלך: ${emoji}`;
+}
+
+export function isInDemoMode(): boolean {
+  return isDemoMode;
 }

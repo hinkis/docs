@@ -1,5 +1,4 @@
-import { parse, addDays, addWeeks, addMonths, setHours, setMinutes, isValid } from 'date-fns';
-import { he } from 'date-fns/locale';
+import { addDays, addWeeks, addMonths, setHours, setMinutes, isValid } from 'date-fns';
 
 // מילון לפענוח ביטויי זמן בעברית
 const hebrewTimeExpressions: Record<string, () => Date> = {
