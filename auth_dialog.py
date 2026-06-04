@@ -119,19 +119,10 @@ if __name__ == "__main__":
     STORED_HASH = hash_password("admin123")  # replace with your real hash
 
     root = tk.Tk()
-    root.title("My App")
-    root.geometry("400x200")
+    root.withdraw()  # hide the main window completely
 
-    result_label = tk.Label(root, text="", font=("Segoe UI", 10))
-    result_label.pack(pady=10)
+    dialog = AuthDialog(root, password_hash=STORED_HASH, action="open the application")
+    if dialog.confirmed:
+        pass  # TODO: add your logic here
 
-    def on_startup_auth():
-        dialog = AuthDialog(root, password_hash=STORED_HASH, action="open the application")
-        if dialog.confirmed:
-            result_label.config(text="✓ Authenticated. App is ready.", fg="green")
-            # TODO: add your startup logic here
-        else:
-            root.destroy()  # close app if user cancels
-
-    root.after(0, on_startup_auth)  # open dialog immediately after window appears
-    root.mainloop()
+    root.destroy()
