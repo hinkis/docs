@@ -15,14 +15,26 @@ class AuthDialog:
     def __init__(self, parent, password_hash: str, action: str = "perform this action"):
         self.confirmed = False
 
+        # Dark overlay covering the full screen
+        self.overlay = tk.Toplevel(parent)
+        self.overlay.attributes("-fullscreen", True)
+        self.overlay.attributes("-alpha", 0.55)
+        self.overlay.configure(bg="black")
+        self.overlay.attributes("-topmost", True)
+
         self.win = tk.Toplevel(parent)
         self.win.title("Authorization Required")
         self.win.resizable(False, False)
-        self.win.grab_set()  # modal
+        self.win.attributes("-topmost", True)
+        self.win.grab_set()
         self.win.focus_force()
 
         self._build_ui(action)
-        self._center(parent)
+        self._center_on_screen()
+
+        # close overlay together with dialog
+        self.win.protocol("WM_DELETE_WINDOW", self._close)
+        self.win.bind("<Escape>", lambda _: self._close())
 
         self.password_hash = password_hash
         self.win.wait_window()
@@ -88,25 +100,28 @@ class AuthDialog:
         ok_btn.pack(side="left")
 
         self.win.bind("<Return>", lambda _: self._on_confirm())
-        self.win.bind("<Escape>", lambda _: self.win.destroy())
 
     def _on_confirm(self):
         entered = hash_password(self.pw_var.get())
         if entered == self.password_hash:
             self.confirmed = True
-            self.win.destroy()
+            self._close()
         else:
             self.error_label.config(text="Incorrect password. Please try again.")
             self.pw_entry.delete(0, "end")
             self.pw_entry.focus()
 
-    def _center(self, parent):
+    def _close(self):
+        self.overlay.destroy()
+        self.win.destroy()
+
+    def _center_on_screen(self):
         self.win.update_idletasks()
-        pw = parent.winfo_rootx() + parent.winfo_width() // 2
-        ph = parent.winfo_rooty() + parent.winfo_height() // 2
+        sw = self.win.winfo_screenwidth()
+        sh = self.win.winfo_screenheight()
         w = self.win.winfo_width()
         h = self.win.winfo_height()
-        self.win.geometry(f"+{pw - w // 2}+{ph - h // 2}")
+        self.win.geometry(f"+{(sw - w) // 2}+{(sh - h) // 2}")
 
 
 def hash_password(password: str) -> str:
