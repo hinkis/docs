@@ -122,17 +122,16 @@ if __name__ == "__main__":
     root.title("My App")
     root.geometry("400x200")
 
-    def on_delete():
-        dialog = AuthDialog(root, password_hash=STORED_HASH, action="delete all user data")
-        if dialog.confirmed:
-            result_label.config(text="✓ Action authorized and executed.", fg="green")
-        else:
-            result_label.config(text="✗ Action cancelled.", fg="red")
-
-    tk.Label(root, text="Demo Application", font=("Segoe UI", 14, "bold")).pack(pady=20)
-    tk.Button(root, text="Delete All Data (requires auth)",
-              command=on_delete, font=("Segoe UI", 10)).pack()
     result_label = tk.Label(root, text="", font=("Segoe UI", 10))
     result_label.pack(pady=10)
 
+    def on_startup_auth():
+        dialog = AuthDialog(root, password_hash=STORED_HASH, action="open the application")
+        if dialog.confirmed:
+            result_label.config(text="✓ Authenticated. App is ready.", fg="green")
+            # TODO: add your startup logic here
+        else:
+            root.destroy()  # close app if user cancels
+
+    root.after(0, on_startup_auth)  # open dialog immediately after window appears
     root.mainloop()
