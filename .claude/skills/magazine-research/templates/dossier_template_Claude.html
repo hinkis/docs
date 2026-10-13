@@ -1,0 +1,201 @@
+<!-- תבנית תיק מחקר לכתבת מגזין. עברית, מימין לשמאל. החלף את הטקסטים בסוגריים מרובעים. -->
+<title>[שם התיק, 2–4 מילים]</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=David+Libre:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#EEF1F4; --paper:#FFFFFF; --ink:#1B2430; --ink-2:#4A5563; --ink-3:#7A8594;
+  --rule:#D3D9E0; --rule-soft:#E4E8ED; --accent:#B8232F; --accent-soft:#F6E3E5;
+  --tint:#E3E8EE; --why-bg:#F4F6F8; --link:#1F4E79; --warn:#8A5A00; --warn-bg:#FFF4D6;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14181E; --paper:#1C2129; --ink:#E6E9EE; --ink-2:#B7BFC9; --ink-3:#8A94A1;
+    --rule:#343C47; --rule-soft:#2A313B; --accent:#E0525C; --accent-soft:#3A2126;
+    --tint:#242B35; --why-bg:#20262E; --link:#8FB8E6; --warn:#F0C060; --warn-bg:#3A3120;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14181E; --paper:#1C2129; --ink:#E6E9EE; --ink-2:#B7BFC9; --ink-3:#8A94A1;
+  --rule:#343C47; --rule-soft:#2A313B; --accent:#E0525C; --accent-soft:#3A2126;
+  --tint:#242B35; --why-bg:#20262E; --link:#8FB8E6; --warn:#F0C060; --warn-bg:#3A3120;
+}
+html{direction:rtl}
+body{background:var(--bg); color:var(--ink); font-family:Arial,"Helvetica Neue",Helvetica,sans-serif; font-size:17px; line-height:1.65; direction:rtl; text-align:right; padding-inline:20px; padding-block:0 80px}
+*{box-sizing:border-box}
+a{color:var(--link); text-decoration:none; border-bottom:1px solid var(--rule)}
+a:hover,a:focus-visible{border-bottom-color:var(--link)}
+a:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.wrap{max-width:860px; margin-inline:auto}
+h1,h2,h3,h4{font-family:"David Libre",David,"Times New Roman",serif; text-wrap:balance; margin:0; font-weight:700; line-height:1.2}
+p{max-width:44em}
+/* ראש העמוד */
+.masthead{padding-block:48px 28px; border-bottom:2px solid var(--ink)}
+.eyebrow{display:flex; align-items:center; gap:10px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); font-weight:700}
+.rec{width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); animation:blink 2.4s infinite}
+@keyframes blink{0%,60%{opacity:1}80%{opacity:.25}100%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.rec{animation:none}}
+.masthead h1{font-size:clamp(38px,7vw,62px); margin-top:14px}
+.dek{font-size:19px; color:var(--ink-2); max-width:38em; margin-top:14px}
+.meta{display:flex; flex-wrap:wrap; gap:8px 26px; margin-top:22px; font-size:13px; color:var(--ink-3)}
+.meta b{color:var(--ink)}
+.note{margin-top:26px; padding:14px 18px; background:var(--accent-soft); border-inline-start:4px solid var(--accent); font-size:15px; color:var(--ink-2)}
+.note b{color:var(--ink)}
+nav.jump{display:flex; flex-wrap:wrap; gap:8px; padding-block:18px; border-bottom:1px solid var(--rule); font-size:14px}
+nav.jump a{border:1px solid var(--rule); border-radius:999px; padding:4px 14px; color:var(--ink-2); background:var(--paper)}
+nav.jump a:hover{border-color:var(--ink-2); color:var(--ink)}
+/* מקטעים */
+section{padding-block:44px 8px}
+.sec-head{display:flex; align-items:baseline; gap:16px; margin-bottom:8px}
+.sec-head h2{font-size:32px}
+.sec-head .letter,.sec-head .count{font-family:"David Libre",serif; font-size:16px; color:var(--accent); letter-spacing:.1em}
+.sec-head .count{font-family:Arial,sans-serif; font-size:13px; color:var(--ink-3)}
+.sec-intro{color:var(--ink-2); max-width:42em; margin:0 0 24px}
+.lane,.sub{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); font-weight:700; margin:30px 0 10px; padding-top:18px; border-top:1px solid var(--rule)}
+.lane:first-of-type,.sub:first-of-type{border-top:0; padding-top:0; margin-top:0}
+/* תגים */
+.tag{display:inline-block; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; background:var(--tint); color:var(--ink-2); padding:2px 9px; border-radius:3px; margin-inline-start:8px; vertical-align:middle; font-weight:700}
+.jew,.il{background:var(--accent-soft); color:var(--accent)}
+.chk{display:inline-block; font-size:11px; letter-spacing:.06em; background:var(--warn-bg); color:var(--warn); padding:1px 7px; border-radius:3px; font-weight:700; vertical-align:middle; margin-inline-start:4px}
+/* פריט מדורג (מצב רחב) */
+article.item{display:grid; grid-template-columns:64px 1fr; gap:0 18px; padding-block:22px 26px; border-top:1px solid var(--rule-soft)}
+.rank{font-family:"David Libre",serif; font-size:40px; line-height:1; color:var(--ink-3); font-variant-numeric:tabular-nums; padding-top:4px}
+.rank.top{color:var(--accent)}
+.item h3{font-size:23px; margin-bottom:8px}
+.item p{margin:0 0 10px}
+/* דיוקן (מצב העמקה) */
+.portrait{padding-block:20px 24px; border-top:1px solid var(--rule-soft)}
+.portrait h3{font-size:23px; margin-bottom:4px}
+.portrait .life{font-size:13.5px; color:var(--ink-3); margin-bottom:10px}
+.portrait p{margin:0 0 10px}
+blockquote{margin:14px 0; padding:14px 20px; border-inline-start:3px solid var(--accent); background:var(--why-bg); font-family:"David Libre",serif; font-size:18px; line-height:1.55; color:var(--ink); max-width:44em}
+blockquote.en{direction:ltr; text-align:left; font-style:italic}
+blockquote cite{display:block; font-family:Arial,sans-serif; font-style:normal; font-size:13px; color:var(--ink-3); margin-top:8px; direction:rtl; text-align:right}
+.why{margin:12px 0 10px; padding:12px 16px; background:var(--why-bg); border-inline-start:3px solid var(--ink-3); font-size:15.5px; color:var(--ink-2); max-width:44em}
+.why b{color:var(--ink)}
+details{margin-top:8px; max-width:44em}
+summary{cursor:pointer; font-size:13.5px; color:var(--ink-3); letter-spacing:.04em; user-select:none}
+summary:hover{color:var(--ink)}
+details ul,.srcs ul{margin:8px 0 0; padding-inline-start:18px; font-size:13.5px; color:var(--ink-2); line-height:1.55}
+details li,.srcs li{margin-bottom:4px}
+.srcs li a{word-break:break-all}
+.srcs h4{font-size:17px; margin:22px 0 6px}
+/* מספרים, טבלאות, כרטיסים */
+.facts{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:10px 0 20px}
+.fact{background:var(--paper); border:1px solid var(--rule); padding:14px 16px}
+.fact .n{font-family:"David Libre",serif; font-size:30px; line-height:1; color:var(--ink); font-variant-numeric:tabular-nums}
+.fact .l{font-size:13px; color:var(--ink-3); margin-top:6px}
+.tablewrap{overflow-x:auto}
+table{width:100%; border-collapse:collapse; font-size:15px; background:var(--paper)}
+th,td{text-align:right; padding:9px 13px; border-bottom:1px solid var(--rule-soft); vertical-align:top}
+th{font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); border-bottom:2px solid var(--rule); background:var(--tint)}
+.tl td:first-child{white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--ink-2); font-weight:700; width:150px}
+.tl tr.key td{background:var(--why-bg)}
+.tl tr.key td:first-child{color:var(--accent)}
+.card{background:var(--paper); border:1px solid var(--rule); padding:20px 24px; display:grid; grid-template-columns:1fr 1fr; gap:10px 28px; font-size:15px}
+.card div b{display:block; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-bottom:2px}
+.card .full{grid-column:1/-1}
+.concepts{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px}
+.concept{background:var(--paper); border:1px solid var(--rule); padding:20px 22px 18px; display:flex; flex-direction:column; gap:8px}
+.concept h3{font-size:23px}
+.concept .en{font-family:"David Libre",serif; font-size:15px; color:var(--ink-3); direction:ltr; text-align:right; font-style:italic}
+.concept p{margin:0; font-size:15.5px; color:var(--ink-2); flex:1}
+.concept .uses{font-size:12.5px; color:var(--ink-3); padding-top:8px; border-top:1px solid var(--rule-soft)}
+.gaps{background:var(--paper); border:1px dashed var(--rule); padding:18px 22px; font-size:15px; color:var(--ink-2)}
+.gaps ul{margin:8px 0 0; padding-inline-start:20px}
+footer{margin-top:50px; padding-top:18px; border-top:1px solid var(--rule); font-size:13px; color:var(--ink-3)}
+@media (max-width:560px){article.item{grid-template-columns:1fr; gap:4px} .rank{font-size:28px} .card{grid-template-columns:1fr} .sec-head h2{font-size:27px}}
+</style>
+
+<div class="wrap">
+<header class="masthead">
+  <div class="eyebrow"><span class="rec" aria-hidden="true"></span> [תיק מחקר לכתבת מגזין]</div>
+  <h1>[שם התיק]</h1>
+  <p class="dek">[משפט או שניים שמסכמים את הנושא ומה הכי מפתיע בו.]</p>
+  <div class="meta">
+    <span><b>[N]</b> פריטים מדורגים</span>
+    <span><b>[N]</b> רעיונות לכתבה</span>
+    <span><b>[N]</b> מרואיינים מוצעים</span>
+    <span>נאסף [תאריך]</span>
+  </div>
+  <div class="note"><b>הערת מתודולוגיה.</b> [כמה חיפושים בוצעו, מה נחסם, ומה דורש אימות. פריטים לא מאומתים מסומנים בתג <span class="chk">לאימות</span>. קשר יהודי או ישראלי מסומן בתג <span class="tag jew">ישראל</span>.]</div>
+</header>
+
+<nav class="jump" aria-label="ניווט">
+  <a href="#items">הפריטים</a>
+  <a href="#concepts">רעיונות לכתבה</a>
+  <a href="#people">מרואיינים</a>
+  <a href="#gaps">מה לא נמצא</a>
+</nav>
+
+<!-- מצב רחב: פריטים מדורגים -->
+<section id="items">
+  <div class="sec-head"><h2>הפריטים</h2><span class="count">מדורגים לפי פוטנציאל מגזיני</span></div>
+  <p class="sec-intro">[המספר הוא הדירוג. פריטים עם תג אדום נושאים קשר יהודי או ישראלי.]</p>
+
+  <div class="lane">[שם המסלול הראשון]</div>
+
+  <article class="item">
+    <div class="rank top">1</div>
+    <div>
+      <h3>[כותרת הפריט] <span class="tag jew">ישראל</span> <span class="tag">אקטואלי</span></h3>
+      <p>[הסיפור בקצרה: שמות, תאריכים, מספרים, ציטוטים.]</p>
+      <div class="why"><b>למה זה עובד.</b> [הנרטיב, הדמות, המתח, ההוק.]</div>
+      <details><summary>מקורות (N)</summary><ul>
+        <li><a href="[URL]">[שם המקור]</a></li>
+      </ul></details>
+    </div>
+  </article>
+</section>
+
+<!-- מצב העמקה: דוגמאות לרכיבים -->
+<section id="timeline">
+  <div class="sec-head"><span class="letter">A</span><h2>רקע וציר זמן</h2></div>
+  <div class="tablewrap"><table class="tl">
+    <thead><tr><th>תאריך</th><th>אירוע</th></tr></thead>
+    <tbody>
+      <tr><td>[תאריך]</td><td>[אירוע]</td></tr>
+      <tr class="key"><td>[תאריך]</td><td>[צומת מרכזי לכתבה]</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="portraits">
+  <div class="sec-head"><span class="letter">C</span><h2>דיוקנאות</h2></div>
+  <div class="facts">
+    <div class="fact"><div class="n">[מספר]</div><div class="l">[מה המספר מודד]</div></div>
+  </div>
+  <article class="portrait">
+    <h3>[שם]</h3>
+    <div class="life">[מקום ושנת לידה – פטירה. תפקיד.]</div>
+    <p>[ביוגרפיה קצרה עם העובדות שמשרתות את הכתבה.]</p>
+    <blockquote class="en">"[Quote in original language]"<cite>[מי אמר, למי, מתי, מקור]</cite></blockquote>
+  </article>
+</section>
+
+<section id="concepts">
+  <div class="sec-head"><h2>רעיונות לכתבה</h2></div>
+  <div class="concepts">
+    <div class="concept">
+      <h3>[כותרת בעברית]</h3>
+      <div class="en">[English title]</div>
+      <p>[פסקה אחת: מה הכתבה טוענת ואיך היא נפתחת.]</p>
+      <div class="uses"><b>שוזר:</b> [מספרי הפריטים]</div>
+    </div>
+  </div>
+</section>
+
+<section id="people">
+  <div class="sec-head"><h2>מרואיינים מוצעים</h2></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>מי</th><th>למה</th><th>איך</th></tr></thead>
+    <tbody><tr><td>[שם]</td><td>[מה הוא תורם]</td><td>[דרך פנייה]</td></tr></tbody>
+  </table></div>
+</section>
+
+<section id="gaps">
+  <div class="sec-head"><h2>מה לא נמצא או לא אומת</h2></div>
+  <div class="gaps"><ul><li>[פער או סתירה בין מקורות]</li></ul></div>
+</section>
+
+<footer>תיק מחקר שנאסף על ידי סוכן מחקר ברשת ב־[תאריך]. הפרטים דורשים אימות עריכתי מול המקורות לפני פרסום.</footer>
+</div>
